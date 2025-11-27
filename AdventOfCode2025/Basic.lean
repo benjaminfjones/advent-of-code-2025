@@ -1,0 +1,90 @@
+def hello := "world"
+
+def readLines : System.FilePath → IO (Array String) := IO.FS.lines
+def readInts (f : System.FilePath) : IO (Array Int) := do
+  let ls ← IO.FS.lines f
+  pure (Array.map String.toInt! ls)
+
+
+
+/-
+Section on `String`s, `Substring`s, and string `Iterators`
+-/
+open String
+open Iterator
+
+#guard "".isPrefixOf "goo"
+#guard hasNext (mkIterator "foo") == true
+#guard (next (mkIterator "foo")).remainingToString == "oo"
+#guard (next (mkIterator "b")).remainingToString == ""
+#guard (next (mkIterator "")).remainingToString == ""
+
+-- decide if 2nd arg is a substring of 1st
+partial def isSubstring : String → String → Bool
+  | _, "" => true
+  | "", _ => false
+  | s, target =>
+    if target.isPrefixOf s then
+      true
+    else
+      let i := mkIterator s
+      let i' := i.next
+      let s' := i'.remainingToString
+      -- have : ¬ i.atEnd = true := by sorry
+      -- have h : sizeOf s' < sizeOf s := by
+      --   sorry
+      --   -- apply Iterator.sizeOf_next_lt_of_atEnd i this
+      isSubstring s' target
+  -- termination_by s t => sizeOf s
+
+
+#check Iterator.sizeOf_next_lt_of_atEnd
+#guard isSubstring "foobar" "foo"
+#guard isSubstring "foobar" "bar"
+#guard isSubstring "foobar" "oob"
+#guard isSubstring "foobar" "quux" == false
+
+-- Version of `isSubstring` using `Iterator` where the termination
+-- argument goes through automagically!
+def isSubstring' (s sub : String) : Bool :=
+    match s, sub with
+      -- handle the special case, otherwise go returns false for "" ""
+      | "", "" => true
+      | s', _ => go (mkIterator s')
+  where
+    go i :=
+      if i.atEnd then
+        false
+      else
+        let s' := i.remainingToString
+        if sub.isPrefixOf s' then
+          true
+        else
+          go i.next
+
+#guard isSubstring' "foobar" "foo"
+#guard isSubstring' "foobar" "bar"
+#guard isSubstring' "foobar" "oob"
+#guard isSubstring' "foobar" "quux" == false
+#guard isSubstring' "foobar" ""
+#guard isSubstring' "" ""
+
+
+/-
+List utilities
+-/
+
+def windows {α: Type} [BEq α] (n: Nat) (xs: List α) : List (List α) :=
+  if xs.length < n || n == 0 then
+    []
+  else
+    let w0 := xs.take n
+    match xs with
+      | [] => []
+      | _ :: tl =>
+        w0 :: windows n tl
+
+#guard windows 0 [1, 2, 3, 4] == []
+#guard windows 2 ([]: List Nat) == []
+#guard windows 1 [1, 2, 3, 4] == [[1], [2], [3], [4]]
+#guard windows 2 [1, 2, 3, 4] == [[1,2], [2,3], [3,4]]
