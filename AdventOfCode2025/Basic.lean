@@ -1,6 +1,7 @@
 def hello := "world"
 
 def readLines : System.FilePath → IO (Array String) := IO.FS.lines
+def readString : System.FilePath → IO String := IO.FS.readFile
 def readInts (f : System.FilePath) : IO (Array Int) := do
   let ls ← IO.FS.lines f
   pure (Array.map String.toInt! ls)
