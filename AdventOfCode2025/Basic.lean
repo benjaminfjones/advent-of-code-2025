@@ -7,6 +7,35 @@ def readInts (f : System.FilePath) : IO (Array Int) := do
   pure (Array.map String.toInt! ls)
 
 
+/-
+Section on integer lists, sets, and intervals
+-/
+
+-- Integer interval
+def Intvl := Int × Int
+
+def intvlContains (i: Intvl) (x: Int) : Bool := i.fst ≤ x && x ≤ i.snd
+
+/-- "n-m" --> (n, m) -/
+def parseIntvl : String → Intvl := fun s =>
+  let ends := s.splitOn "-"
+  (ends[0]!.toInt!, ends[1]!.toInt!)
+
+/-- A crude integer set based on intervals -/
+def IntSet := List Intvl
+def intSetContains (is: IntSet) (x: Int) : Bool := is.any (fun intvl => intvlContains intvl x)
+
+def intListMax (is: List Int) : Option Int :=
+    aux none is
+  where
+    aux (curMax: Option Int) (is: List Int) := match is with
+    | [] => curMax
+    | hd :: tl => if curMax.isNone || hd > curMax.get! then
+        aux hd tl
+      else
+        aux curMax tl
+
+def intSetMax (is: IntSet) : Option Int := intListMax (is.map (fun iv => iv.snd))
 
 /-
 Section on `String`s, `Substring`s, and string `Iterators`

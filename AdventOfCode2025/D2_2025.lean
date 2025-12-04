@@ -1,26 +1,6 @@
 import Std
 import AdventOfCode2025.Basic
 
-
-def Intvl := Int × Int
-def intvlContains (i: Intvl) (x: Int) : Bool := i.fst ≤ x && x ≤ i.snd
-def parseIntvl : String → Intvl := fun s =>
-  let ends := s.splitOn "-"
-  (ends[0]!.toInt!, ends[1]!.toInt!)
-
-def IntSet := List Intvl  -- a crude integer set
-def intSetContains (is: IntSet) (x: Int) : Bool := is.any (fun intvl => intvlContains intvl x)
-def intListMax (is: List Int) : Option Int :=
-    aux none is
-  where
-    aux (curMax: Option Int) (is: List Int) := match is with
-    | [] => curMax
-    | hd :: tl => if curMax.isNone || hd > curMax.get! then
-        aux hd tl
-      else
-        aux curMax tl
-def intSetMax (is: IntSet) : Option Int := intListMax (is.map (fun iv => iv.snd))
-
 def parseInputStr : String → IntSet := fun input => List.map parseIntvl $ input.splitOn ","
 
 #guard intListMax [2,7,4,3,6,8,6,0,-1,10,3] == some 10
