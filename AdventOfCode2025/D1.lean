@@ -1,5 +1,7 @@
 import AdventOfCode2025.Basic
 
+namespace D1
+
 def maxDial : Int := 100
 def initDial : Int := 50
 
@@ -122,3 +124,4 @@ def foldDoRot2 : Int × Nat → Int → Int × Nat := fun (cur, sum) rot =>
   let ins ← p1_input
   pure $ List.foldl foldDoRot2 (initDial, 0) ins.toList)
 
+end D1

@@ -1,6 +1,8 @@
 import Std
 import AdventOfCode2025.Basic
 
+namespace D2
+
 def parseInputStr : String → IntSet := fun input => List.map parseIntvl $ input.splitOn ","
 
 #guard intListMax [2,7,4,3,6,8,6,0,-1,10,3] == some 10
@@ -141,3 +143,5 @@ def overallRepeatedNums :=
   /- let duration := endTime - startTime -/
   /- IO.println s!"time: {duration}" -/
   pure $ result
+
+end D2
