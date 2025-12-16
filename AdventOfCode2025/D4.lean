@@ -49,7 +49,42 @@ instance : GetElem? (Grid α) (Nat × Nat) α (fun g rc => rc.fst < g.nrows ∧ 
   getElem? g rc := (g.data[rc.fst]?) >>= λ row => row[rc.snd]?
   getElem! g rc := g.data[rc.fst]![rc.snd]!
 
-def Grid.set (g: Grid α) (idx: Nat × Nat) (v: α) (h: idx.fst < g.nrows ∧ idx.snd < g.ncols) : Grid α := sorry
+def Grid.set (g: Grid α) (idx: Nat × Nat) (v: α) (h: idx.fst < g.data.size ∧ idx.snd < g.ncols) : Grid α :=
+  let row := g.data[idx.fst]'(g.nrowEqn ▸ h.left)  -- this keeps being awkward
+
+  have hrsize : g.ncols = row.size := by
+    apply g.ncolEqn idx.fst h.left
+  have : idx.snd < row.size := by
+    calc
+      idx.snd < g.ncols := h.right
+      _       = row.size := hrsize
+  /- Alternatively, using grind... -/
+  /- have : idx.snd < row.size := by grind  -- just transitivity -/
+  let row' := row.set idx.snd v this
+  let data' := g.data.set idx.fst row'
+  have hdsize : data'.size = g.data.size := by grind
+  {
+    data := data',
+    nrows := g.nrows,
+    ncols := g.ncols,
+    validRows := by
+      rw [hdsize]
+      exact g.validRows
+    validCols := by
+      intro i h
+      rw [hdsize] at h
+      have : data'[i].size = g.data[i].size := by grind
+      rw [this]
+      exact g.validCols i h
+    nrowEqn := by
+      rw [hdsize]
+      exact g.nrowEqn
+    ncolEqn := by
+      intro i h
+      have : data'[i].size = g.data[i].size := by grind
+      rw [this]
+      exact g.ncolEqn i (hdsize ▸ h)
+  }
 
 end Grid
 
