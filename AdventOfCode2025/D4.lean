@@ -12,8 +12,26 @@ structure Grid α where
   nrowEqn: nrows = data.size
   ncolEqn: ∀ i, (h : i < data.size) → ncols = (data[i]'h).size
 
-def Grid.replicate (rows cols: Nat) (a: α) : Grid α :=
-  sorry
+def Grid.replicate (rows cols: Nat) (a: α) (hr: 0 < rows) (hc: 0 < cols) : Grid α :=
+  let row := Array.replicate cols a
+  let data := Array.replicate rows row
+  {
+    data := data,
+    nrows := rows,
+    ncols := cols,
+    /- validRows := by grind  -- size_replicate has a grind attribute -/
+    validRows := by
+      have : data.size = rows := by apply Array.size_replicate
+      rw [this]
+      exact hr,
+    /- validCols := by grind -/
+    validCols := by
+      intro i h
+      rw [Array.getElem_replicate, Array.size_replicate]
+      exact hc
+    nrowEqn := by grind
+    ncolEqn := by grind
+  }
 
 instance : GetElem (Grid α) (Nat × Nat) α (fun g rc => rc.fst < g.nrows ∧ rc.snd < g.ncols) where
   getElem g rc valid :=
